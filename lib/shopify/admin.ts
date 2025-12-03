@@ -1,12 +1,12 @@
-import "server-only";
-
 import { env } from "@/lib/env";
+import "server-only";
 
 type AdminFetchParams = {
   query: string;
   variables?: Record<string, unknown>;
 };
 
+// The Admin API Engine
 export async function shopifyAdminFetch<T>({
   query,
   variables,

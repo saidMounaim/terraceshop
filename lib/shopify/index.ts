@@ -19,7 +19,7 @@ type ShopifyResponse<T> = {
   };
 };
 
-// The Storefront API Engine
+// The Storefront API Engine (Public Access)
 export async function shopifyFetch<T>({
   query,
   variables,
