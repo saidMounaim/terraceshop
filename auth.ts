@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import { env } from "@/lib/env";
 import { shopifyFetch } from "@/lib/shopify";
 import { createAccessTokenMutation } from "@/lib/shopify/mutations/customer";
+import { getCustomerQuery } from "@/lib/shopify/queries/customer";
 import { syncShopifyCustomer } from "@/lib/auth/helpers";
 import { signInSchema } from "./lib/validations";
 
@@ -42,9 +43,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const accessToken = tokenData.customerAccessToken.accessToken;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { body: customerBody } = await shopifyFetch<any>({
+          query: getCustomerQuery,
+          variables: { customerAccessToken: accessToken },
+          cacheTag: ["auth"],
+        });
+
+        const customer = customerBody.data?.customer;
+        const fullName = customer
+          ? `${customer.firstName} ${customer.lastName}`
+          : "";
+
         return {
-          id: tokenData.customerAccessToken.accessToken,
+          id: accessToken,
           email: parsed.data.email,
+          name: fullName,
         };
       },
     }),
@@ -53,25 +69,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && user.email) {
         try {
-          // We just try to "Sync" (Create or Merge) using our REST helper.
           await syncShopifyCustomer({
             email: user.email,
             firstName: profile?.given_name ?? "",
             lastName: profile?.family_name ?? "",
           });
-
           return true;
         } catch (error) {
           console.error("Google Sync Error:", error);
           return false;
         }
       }
-      return true; // Allow other providers (Credentials)
+      return true;
     },
 
     async jwt({ token, user, account }) {
       if (user) {
         if (account?.provider === "credentials") {
+          token.name = user.name;
           token.shopifyAccessToken = user.id;
         } else if (account?.provider === "google") {
           token.isGoogleUser = true;
@@ -82,6 +97,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async session({ session, token }: any) {
+      session.name = token.name;
       session.accessToken = token.shopifyAccessToken;
       session.isGoogleUser = token.isGoogleUser;
       return session;

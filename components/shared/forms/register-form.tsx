@@ -16,10 +16,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -45,6 +47,8 @@ export default function RegisterForm() {
       const result = await registerCustomer(null, formData);
       if (result?.error) {
         setError(result.error);
+      } else {
+        router.push("/login");
       }
     });
   }
