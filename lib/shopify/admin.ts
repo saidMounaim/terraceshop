@@ -76,3 +76,68 @@ export async function createCustomerREST(user: {
 
   return { status: "created", customer: data.customer };
 }
+
+// Save Cart ID to Customer Metafield
+export async function saveCartToCustomer(email: string, cartId: string) {
+  const customer = await findCustomerByEmail(email);
+  if (!customer) return;
+
+  const response = await fetch(
+    `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers/${customer.id}.json`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN,
+      },
+      body: JSON.stringify({
+        customer: {
+          id: customer.id,
+          metafields: [
+            {
+              namespace: "custom",
+              key: "active_cart_id",
+              value: cartId,
+              type: "single_line_text_field",
+            },
+          ],
+        },
+      }),
+    }
+  );
+
+  return response.json();
+}
+
+// Get Cart ID from Customer Metafield
+export async function getCartFromCustomer(email: string) {
+  const customer = await findCustomerByEmail(email);
+  if (!customer) return null;
+
+  const response = await fetch(
+    `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers/${customer.id}/metafields.json`,
+    {
+      headers: { "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN },
+    }
+  );
+
+  const body = await response.json();
+  const metafield = body.metafields.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (m: any) => m.key === "active_cart_id" && m.namespace === "custom"
+  );
+
+  return metafield ? metafield.value : null;
+}
+
+// Helper: Find Customer ID by Email
+async function findCustomerByEmail(email: string) {
+  const res = await fetch(
+    `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers/search.json?query=email:${email}`,
+    {
+      headers: { "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN },
+    }
+  );
+  const data = await res.json();
+  return data.customers[0] || null;
+}

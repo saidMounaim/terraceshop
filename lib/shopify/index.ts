@@ -5,6 +5,7 @@ import {
   getProductsQuery,
 } from "./queries/product";
 import { getCollectionProductsQuery } from "./queries/collection";
+import { getCartQuery } from "./queries/cart";
 
 export * from "./fragments";
 export * from "./queries/product";
@@ -140,4 +141,15 @@ export async function getProductRecommendations(productId: string) {
   });
 
   return res.body.data.productRecommendations || [];
+}
+
+export async function getCart(cartId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getCartQuery,
+    variables: { cartId },
+    cacheTag: ["cart"],
+  });
+
+  return res.body.data.cart;
 }

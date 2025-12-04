@@ -85,3 +85,57 @@ export const productFragment = /* GraphQL */ `
   ${priceFragment}
   ${seoFragment}
 `;
+
+export const cartFragment = /* GraphQL */ `
+  fragment cart on Cart {
+    id
+    checkoutUrl
+    totalQuantity
+    cost {
+      subtotalAmount {
+        ...price
+      }
+      totalAmount {
+        ...price
+      }
+      totalTaxAmount {
+        ...price
+      }
+    }
+    lines(first: 100) {
+      edges {
+        node {
+          id
+          quantity
+          cost {
+            totalAmount {
+              ...price
+            }
+          }
+          merchandise {
+            ... on ProductVariant {
+              id
+              title
+              selectedOptions {
+                name
+                value
+              }
+              product {
+                handle
+                title
+                featuredImage {
+                  ...image
+                }
+              }
+              price {
+                ...price
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ${imageFragment}
+  ${priceFragment}
+`;

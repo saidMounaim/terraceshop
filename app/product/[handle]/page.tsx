@@ -5,6 +5,7 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProductGallery } from "@/components/shared/product/gallery";
 import { VariantSelector } from "@/components/shared/product/variant-selector";
+import { AddToCart } from "@/components/shared/product/add-to-cart";
 
 export async function generateMetadata({
   params,
@@ -73,12 +74,10 @@ export default async function ProductPage({
           <VariantSelector options={product.options} />
 
           <div className="mt-8 flex flex-col gap-4">
-            <Button
-              size="lg"
-              className="h-14 w-full rounded-none bg-black text-lg font-bold uppercase tracking-widest hover:bg-zinc-800"
-            >
-              Add to Cart - {formatPrice(currentVariant.price.amount)}
-            </Button>
+            <AddToCart
+              variantId={currentVariant?.id}
+              availableForSale={currentVariant?.availableForSale}
+            />
             <p className="text-center text-xs text-zinc-500 uppercase tracking-wide">
               Free Shipping on orders over $150
             </p>

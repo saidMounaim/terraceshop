@@ -7,6 +7,8 @@ import { createAccessTokenMutation } from "@/lib/shopify/mutations/customer";
 import { getCustomerQuery } from "@/lib/shopify/queries/customer";
 import { syncShopifyCustomer } from "@/lib/auth/helpers";
 import { signInSchema } from "./lib/validations";
+import { cookies } from "next/headers";
+import { getCartFromCustomer, saveCartToCustomer } from "./lib/shopify/admin";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -78,6 +80,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch (error) {
           console.error("Google Sync Error:", error);
           return false;
+        }
+      }
+      if (user.email) {
+        try {
+          const c = await cookies();
+          const localCartId = c.get("cartId")?.value;
+
+          if (localCartId) {
+            await saveCartToCustomer(user.email, localCartId);
+          } else {
+            const savedCartId = await getCartFromCustomer(user.email);
+
+            if (savedCartId) {
+              c.set("cartId", savedCartId);
+            }
+          }
+        } catch (e) {
+          console.error("Cart Logic Error:", e);
         }
       }
       return true;
