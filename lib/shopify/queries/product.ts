@@ -31,3 +31,13 @@ export const getProductsQuery = /* GraphQL */ `
   }
   ${productFragment}
 `;
+
+// Get Related Products (Shopify's Recommendation Engine)
+export const getProductRecommendationsQuery = /* GraphQL */ `
+  query getProductRecommendations($productId: ID!) {
+    productRecommendations(productId: $productId) {
+      ...product
+    }
+  }
+  ${productFragment}
+`;

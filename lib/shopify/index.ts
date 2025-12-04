@@ -1,5 +1,9 @@
 import { env } from "@/lib/env";
-import { getProductsQuery } from "./queries/product";
+import {
+  getProductQuery,
+  getProductRecommendationsQuery,
+  getProductsQuery,
+} from "./queries/product";
 import { getCollectionProductsQuery } from "./queries/collection";
 
 export * from "./fragments";
@@ -112,4 +116,28 @@ export async function getFeaturedProducts() {
   });
 
   return res.body.data.products?.edges || [];
+}
+
+// Fetch Single Product by Handle
+export async function getProduct(handle: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getProductQuery,
+    variables: { handle },
+    cacheTag: [`product-${handle}`],
+  });
+
+  return res.body.data.product;
+}
+
+// Fetch Related Products
+export async function getProductRecommendations(productId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getProductRecommendationsQuery,
+    variables: { productId },
+    cacheTag: [`product-${productId}-recommendations`],
+  });
+
+  return res.body.data.productRecommendations || [];
 }

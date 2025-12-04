@@ -42,6 +42,22 @@ export const productFragment = /* GraphQL */ `
         ...price
       }
     }
+    variants(first: 250) {
+      edges {
+        node {
+          id
+          title
+          availableForSale
+          selectedOptions {
+            name
+            value
+          }
+          price {
+            ...price
+          }
+        }
+      }
+    }
     featuredImage {
       ...image
     }
