@@ -4,7 +4,7 @@ import Google from "next-auth/providers/google";
 import { env } from "@/lib/env";
 import { shopifyFetch } from "@/lib/shopify";
 import { createAccessTokenMutation } from "@/lib/shopify/mutations/customer";
-import { getShopifyCustomer, createShopifyCustomer } from "@/lib/auth/helpers";
+import { syncShopifyCustomer } from "@/lib/auth/helpers";
 import { signInSchema } from "./lib/validations";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -53,22 +53,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && user.email) {
         try {
-          const existingCustomer = await getShopifyCustomer(user.email);
+          // We just try to "Sync" (Create or Merge) using our REST helper.
+          await syncShopifyCustomer({
+            email: user.email,
+            firstName: profile?.given_name ?? "",
+            lastName: profile?.family_name ?? "",
+          });
 
-          if (!existingCustomer) {
-            await createShopifyCustomer({
-              email: user.email,
-              firstName: profile?.given_name ?? "",
-              lastName: profile?.family_name ?? "",
-            });
-          }
           return true;
         } catch (error) {
           console.error("Google Sync Error:", error);
           return false;
         }
       }
-      return true;
+      return true; // Allow other providers (Credentials)
     },
 
     async jwt({ token, user, account }) {

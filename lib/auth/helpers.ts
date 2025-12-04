@@ -1,4 +1,4 @@
-import { shopifyAdminFetch } from "@/lib/shopify/admin";
+import { createCustomerREST, shopifyAdminFetch } from "@/lib/shopify/admin";
 
 // Check if a customer exists by email (Server-Side / Admin API)
 export async function getShopifyCustomer(email: string) {
@@ -28,40 +28,25 @@ export async function getShopifyCustomer(email: string) {
   return data.customers.edges[0]?.node || null;
 }
 
-// Create a customer in Shopify (if they log in with Google for the first time)
-export async function createShopifyCustomer(user: {
+// Create or sync a Shopify customer (Server-Side / Admin API)
+export async function syncShopifyCustomer(user: {
   email: string;
   firstName?: string;
   lastName?: string;
 }) {
-  const mutation = `
-    mutation customerCreate($input: CustomerInput!) {
-      customerCreate(input: $input) {
-        customer {
-          id
-          email
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }
-  `;
+  try {
+    const result = await createCustomerREST({
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      tags: ["auth_google", "headless_user"],
+    });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = await shopifyAdminFetch<any>({
-    query: mutation,
-    variables: {
-      input: {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        verifiedEmail: true,
-        sendEmailWelcome: false,
-      },
-    },
-  });
+    return result;
 
-  return data.customerCreate.customer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error("Sync Error:", error);
+    throw error;
+  }
 }

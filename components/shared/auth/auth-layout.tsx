@@ -1,6 +1,8 @@
+import { auth } from "@/auth";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
   title,
   subtitle,
@@ -11,6 +13,10 @@ export default function AuthLayout({
   subtitle: React.ReactNode;
   imageSrc?: string;
 }) {
+  const session = await auth();
+
+  if (session) redirect("/");
+
   return (
     <div className="flex min-h-screen w-full">
       <div className="flex w-full flex-col justify-center px-8 sm:px-12 lg:w-1/2 xl:px-24">

@@ -1,5 +1,3 @@
-"use client";
-
 import AuthLayout from "@/components/shared/auth/auth-layout";
 import GoogleLoginForm from "@/components/shared/forms/google-login-form";
 import LoginForm from "@/components/shared/forms/login-form";
