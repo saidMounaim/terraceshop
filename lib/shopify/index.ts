@@ -1,4 +1,11 @@
 import { env } from "@/lib/env";
+import { getProductsQuery } from "./queries/product";
+import { getCollectionProductsQuery } from "./queries/collection";
+
+export * from "./fragments";
+export * from "./queries/product";
+export * from "./queries/collection";
+export * from "./mutations/customer";
 
 type ShopifyFetchParams = {
   query: string;
@@ -57,4 +64,52 @@ export async function shopifyFetch<T>({
       query,
     };
   }
+}
+
+// Get products for a specific collection by its handle
+export async function getCollectionProducts({
+  collection,
+  reverse,
+  sortKey,
+}: {
+  collection: string;
+  reverse?: boolean;
+  sortKey?: "CREATED" | "PRICE" | "BEST_SELLING" | "TITLE";
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getCollectionProductsQuery,
+    variables: {
+      handle: collection,
+      reverse,
+      sortKey: sortKey === "CREATED" ? "CREATED" : sortKey,
+    },
+    cacheTag: [`collection-${collection}`, "products"],
+  });
+
+  return res.body.data.collection?.products?.edges || [];
+}
+
+// Get "Featured" products for Homepage
+export async function getFeaturedProducts() {
+  const products = await getCollectionProducts({
+    collection: "homepage",
+  });
+
+  if (products.length > 0) {
+    return products;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getProductsQuery,
+    variables: {
+      sortKey: "CREATED_AT",
+      reverse: true,
+      first: 4,
+    },
+    cacheTag: ["products"],
+  });
+
+  return res.body.data.products?.edges || [];
 }

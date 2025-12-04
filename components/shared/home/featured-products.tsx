@@ -3,10 +3,10 @@ import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { dummyProducts } from "@/lib/placeholder-data";
+import { getFeaturedProducts } from "@/lib/shopify";
 
 export async function FeaturedProducts() {
-  const products = dummyProducts;
+  const products = await getFeaturedProducts();
   return (
     <section className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">
