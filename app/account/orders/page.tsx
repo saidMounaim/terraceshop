@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getCustomerOrders } from "@/lib/shopify";
+import { getCustomerOrders, getCustomerOrdersByEmail } from "@/lib/shopify";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +23,17 @@ export const metadata: Metadata = {
 export default async function OrdersPage() {
   const session = await auth();
 
-  if (!session?.accessToken) {
+  if (!session?.user?.email) {
     redirect("/login");
   }
 
-  const orders = await getCustomerOrders(session.accessToken);
+  let orders = [];
+
+  if (session.accessToken) {
+    orders = await getCustomerOrders(session.accessToken);
+  } else if (session.user.email) {
+    orders = await getCustomerOrdersByEmail(session.user.email);
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-12 lg:py-24">

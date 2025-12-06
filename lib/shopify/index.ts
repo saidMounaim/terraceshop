@@ -10,6 +10,8 @@ import {
 } from "./queries/collection";
 import { getCartQuery } from "./queries/cart";
 import { getCustomerOrdersQuery } from "./queries/customer";
+import { getOrdersByEmailQuery } from "./queries/admin";
+import { shopifyAdminFetch } from "./admin";
 
 export * from "./fragments";
 export * from "./queries/product";
@@ -227,4 +229,54 @@ export async function getCollections() {
   return validCollections;
 
   return validCollections;
+}
+
+export async function getCustomerOrdersByEmail(email: string) {
+  const res = await shopifyAdminFetch({
+    query: getOrdersByEmailQuery,
+    variables: { query: `email:${email}` },
+  });
+
+  const orders = res?.body?.data?.orders?.edges || [];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return orders.map((edge: any) => {
+    const fulfillment = edge.node.fulfillments?.[0];
+    const tracking = fulfillment?.trackingInfo?.[0];
+
+    return {
+      node: {
+        id: edge.node.id,
+        orderNumber: edge.node.name.replace("#", ""),
+        processedAt: edge.node.processedAt,
+        financialStatus: edge.node.displayFinancialStatus,
+        fulfillmentStatus: edge.node.displayFulfillmentStatus,
+        statusUrl: tracking?.url || null,
+        totalPrice: {
+          amount: edge.node.totalPriceSet.shopMoney.amount,
+          currencyCode: edge.node.totalPriceSet.shopMoney.currencyCode,
+        },
+        lineItems: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          edges: edge.node.lineItems.edges.map((item: any) => ({
+            node: {
+              title: item.node.title,
+              quantity: item.node.quantity,
+              variant: {
+                image: item.node.image || item.node.variant?.image || null,
+              },
+            },
+          })),
+        },
+        successfulFulfillments: fulfillment
+          ? [
+              {
+                trackingCompany: tracking?.company,
+                trackingInfo: [tracking],
+              },
+            ]
+          : [],
+      },
+    };
+  });
 }

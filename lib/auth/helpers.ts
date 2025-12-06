@@ -17,13 +17,11 @@ export async function getShopifyCustomer(email: string) {
     }
   `;
 
-  const data = await shopifyAdminFetch<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    customers: { edges: { node: any }[] };
-  }>({
+  const data = (await shopifyAdminFetch({
     query,
     variables: { email: `email:${email}` },
-  });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  })) as any;
 
   return data.customers.edges[0]?.node || null;
 }

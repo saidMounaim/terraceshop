@@ -9,7 +9,7 @@ type AdminFetchParams = {
 type RestMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 // Generic GraphQL Fetch Helper
-export async function shopifyAdminFetch<T>({
+export async function shopifyAdminFetch({
   query,
   variables,
 }: AdminFetchParams) {
@@ -28,10 +28,13 @@ export async function shopifyAdminFetch<T>({
   const body = await response.json();
 
   if (body.errors) {
-    throw new Error(`Admin GraphQL Error: ${JSON.stringify(body.errors)}`);
+    throw body.errors[0];
   }
 
-  return body.data as T;
+  return {
+    status: response.status,
+    body,
+  };
 }
 
 // Generic REST Fetch Helper
