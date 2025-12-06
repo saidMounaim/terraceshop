@@ -3,88 +3,72 @@
 import { cookies } from "next/headers";
 import { shopifyFetch } from "@/lib/shopify";
 import {
-  addToCartMutation,
-  createCartMutation,
   editCartItemsMutation,
   removeFromCartMutation,
   updateCartBuyerIdentityMutation,
 } from "../shopify/mutations/cart";
 import { auth } from "@/auth";
+import { revalidateTag } from "next/cache";
+import { addLinesToCart, createShopifyCart } from "../shopify/cart-service";
+
+export type CartActionResult = {
+  success: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cart?: any;
+  error?: string;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function addItem(prevState: any, variantId: string | undefined) {
-  const c = await cookies();
-  let cartId = c.get("cartId")?.value;
-  let cart;
+export async function addItem(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prevState: any,
+  variantId: string | undefined
+): Promise<CartActionResult> {
+  if (!variantId) return { success: false, error: "Missing product variant" };
 
-  if (!variantId) {
-    return { error: "Missing product variant" };
-  }
+  const c = await cookies();
+  const cartId = c.get("cartId")?.value;
 
   try {
     const session = await auth();
-    const token = session?.accessToken as string | undefined;
-    const email = session?.user?.email;
+    const identity = session?.user?.email
+      ? {
+          email: session.user.email,
+          token: session.accessToken as string | undefined,
+          countryCode: "MA",
+        }
+      : undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const buyerIdentity: any = {};
-    if (email) buyerIdentity.email = email;
-    if (token) buyerIdentity.customerAccessToken = token;
+    const lines = [{ merchandiseId: variantId, quantity: 1 }];
 
-    if (email || token) {
-      buyerIdentity.countryCode = "MA";
-    }
+    let cart;
 
     if (!cartId) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const input: any = { lines: [] };
-
-      if (Object.keys(buyerIdentity).length > 0) {
-        input.buyerIdentity = buyerIdentity;
+      cart = await createShopifyCart(identity, lines);
+      c.set("cartId", cart.id);
+    } else {
+      try {
+        cart = await addLinesToCart(cartId, lines);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        if (
+          error.message === "CART_NOT_FOUND" ||
+          error.message.includes("does not exist")
+        ) {
+          console.warn("♻️ Cart expired. Creating fresh cart...");
+          cart = await createShopifyCart(identity, lines);
+          c.set("cartId", cart.id);
+        } else {
+          return { success: false, error: error.message };
+        }
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { body } = await shopifyFetch<any>({
-        query: createCartMutation,
-        variables: { input },
-        cacheTag: ["cart"],
-        cache: "no-store",
-      });
-
-      cart = body.data.cartCreate.cart;
-      cartId = cart.id;
-      c.set("cartId", cartId!);
-    } else if (Object.keys(buyerIdentity).length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await shopifyFetch<any>({
-        query: updateCartBuyerIdentityMutation,
-        variables: {
-          cartId,
-          buyerIdentity,
-        },
-        cacheTag: ["cart"],
-      });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { body } = await shopifyFetch<any>({
-      query: addToCartMutation,
-      variables: {
-        cartId,
-        lines: [{ merchandiseId: variantId, quantity: 1 }],
-      },
-      cacheTag: ["cart"],
-      cache: "no-store",
-    });
-
-    if (body.data.cartLinesAdd?.userErrors?.length > 0) {
-      return { error: body.data.cartLinesAdd.userErrors[0].message };
-    }
-
-    return { success: true, cart: body.data.cartLinesAdd.cart };
+    revalidateTag("cart", "max");
+    return { success: true, cart };
   } catch (e) {
-    console.error(e);
-    return { error: "Error adding to cart" };
+    console.error("AddItem Critical Error:", e);
+    return { success: false, error: "System error. Please try again." };
   }
 }
 

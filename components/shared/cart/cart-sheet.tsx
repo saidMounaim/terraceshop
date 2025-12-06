@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Loader2, Lock, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,11 +12,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatPrice } from "@/lib/utils";
-import { useCart } from "./cart-context";
 import { EditItemQuantity } from "./edit-item-quantity";
 import { DeleteItem } from "./delete-item";
 import { useTransition } from "react";
 import { proceedToCheckout } from "@/lib/actions/chekout";
+import { useCartStore } from "@/lib/store/cart";
 
 export function CartSheet({
   cart,
@@ -25,13 +26,19 @@ export function CartSheet({
   cart: any;
   isLoggedIn: boolean;
 }) {
-  const { isOpen, closeCart } = useCart();
+  const { isOpen, closeCart } = useCartStore();
+  const router = useRouter();
   const items = cart?.lines?.edges || [];
 
   const [isPending, startTransition] = useTransition();
 
   const handleCheckout = () => {
     closeCart();
+
+    if (!isLoggedIn) {
+      router.push("/login?callbackUrl=/checkout");
+      return;
+    }
     startTransition(async () => {
       await proceedToCheckout();
     });
@@ -137,20 +144,27 @@ export function CartSheet({
             <Button
               onClick={handleCheckout}
               disabled={isPending}
-              className="w-full h-12 bg-black text-white font-bold uppercase"
+              className="w-full h-12 bg-black text-white font-bold uppercase hover:bg-zinc-800"
             >
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Redirecting...
                 </>
+              ) : isLoggedIn ? (
+                "Checkout"
               ) : (
-                <>
-                  <Lock className="mr-2 h-4 w-4" />
-                  {isLoggedIn ? "Checkout" : "Log in to Checkout"}
-                </>
+                <span className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" /> Log in to Checkout
+                </span>
               )}
             </Button>
+
+            {!isLoggedIn && (
+              <p className="mt-3 text-xs text-center text-zinc-500">
+                You must have an account to place an order.
+              </p>
+            )}
           </div>
         )}
       </SheetContent>

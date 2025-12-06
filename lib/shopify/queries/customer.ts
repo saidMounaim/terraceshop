@@ -1,3 +1,5 @@
+import { imageFragment, priceFragment } from "../fragments";
+
 // get customer details
 export const getCustomerQuery = /* GraphQL */ `
   query getCustomer($customerAccessToken: String!) {
@@ -37,4 +39,48 @@ export const getCustomerQuery = /* GraphQL */ `
       }
     }
   }
+`;
+
+export const getCustomerOrdersQuery = /* GraphQL */ `
+  query getCustomerOrders($customerAccessToken: String!) {
+    customer(customerAccessToken: $customerAccessToken) {
+      orders(first: 20, sortKey: PROCESSED_AT, reverse: true) {
+        edges {
+          node {
+            id
+            orderNumber
+            processedAt
+            financialStatus
+            fulfillmentStatus
+            statusUrl
+            totalPrice {
+              ...price
+            }
+            lineItems(first: 5) {
+              edges {
+                node {
+                  title
+                  quantity
+                  variant {
+                    image {
+                      ...image
+                    }
+                  }
+                }
+              }
+            }
+            successfulFulfillments(first: 1) {
+              trackingCompany
+              trackingInfo(first: 1) {
+                number
+                url
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ${priceFragment}
+  ${imageFragment}
 `;

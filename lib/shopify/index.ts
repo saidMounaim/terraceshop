@@ -6,6 +6,7 @@ import {
 } from "./queries/product";
 import { getCollectionProductsQuery } from "./queries/collection";
 import { getCartQuery } from "./queries/cart";
+import { getCustomerOrdersQuery } from "./queries/customer";
 
 export * from "./fragments";
 export * from "./queries/product";
@@ -165,5 +166,18 @@ export async function getCart(cartId: string) {
     cache: "no-store",
   });
 
-  return res.body.data.cart;
+  return res.body.data.cart || undefined;
+}
+
+// Fetch Customer Orders
+export async function getCustomerOrders(accessToken: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getCustomerOrdersQuery,
+    variables: { customerAccessToken: accessToken },
+    cacheTag: ["customer-orders"],
+    cache: "no-store",
+  });
+
+  return res.body.data.customer?.orders?.edges || [];
 }
