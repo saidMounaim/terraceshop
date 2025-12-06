@@ -35,20 +35,25 @@ export default async function CollectionPage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-6 pb-24 pt-12">
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end">
+      <div className="flex flex-col items-start justify-between gap-6 border-b-2 border-emerald-950 pb-8 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-4xl font-extrabold uppercase tracking-tighter text-zinc-900">
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-emerald-950 italic sm:text-6xl leading-[0.9]">
             {collection}
           </h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            {products.length} Products Found
-          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 bg-amber-400 rounded-full" />
+            <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+              {products.length} Products Found
+            </p>
+          </div>
         </div>
 
-        <SortDropdown />
+        <div className="w-full sm:w-auto">
+          <SortDropdown />
+        </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-12">
         <ProductGrid products={products} />
       </div>
     </div>

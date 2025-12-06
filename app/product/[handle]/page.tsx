@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/shopify";
 import { formatPrice } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { ProductGallery } from "@/components/shared/product/gallery";
 import { VariantSelector } from "@/components/shared/product/variant-selector";
 import { AddToCart } from "@/components/shared/product/add-to-cart";
@@ -49,46 +48,50 @@ export default async function ProductPage({
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12 lg:py-24">
-      <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
+      <div className="lg:grid lg:grid-cols-2 lg:gap-x-16">
+        {/* Gallery */}
         <div className="product-gallery">
           <ProductGallery
-            images={
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              product.images.edges.map((e: any) => e.node)
-            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            images={product.images.edges.map((e: any) => e.node)}
           />
         </div>
 
-        <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0 lg:sticky lg:top-24 h-fit">
-          <div className="mb-8 border-b border-zinc-200 pb-8">
-            <h1 className="text-3xl font-extrabold uppercase tracking-tighter text-black sm:text-5xl">
+        {/* Details - Sticky Sidebar */}
+        <div className="mt-10 px-0 lg:mt-0 lg:sticky lg:top-24 h-fit">
+          <div className="mb-8 border-b-2 border-emerald-950 pb-8">
+            <h1 className="text-4xl font-black uppercase tracking-tighter text-emerald-950 italic sm:text-5xl lg:text-6xl leading-[0.9]">
               {product.title}
             </h1>
-            <div className="mt-4 flex items-end gap-4">
-              <p className="text-2xl font-bold text-zinc-900">
+            <div className="mt-6 flex items-baseline gap-4">
+              <p className="text-3xl font-bold font-mono text-emerald-900">
                 {formatPrice(currentVariant.price.amount)}
               </p>
+              {/* Optional: Add compare-at-price if on sale */}
             </div>
           </div>
 
           <VariantSelector options={product.options} />
 
-          <div className="mt-8 flex flex-col gap-4">
+          <div className="mt-10 flex flex-col gap-4">
             <AddToCart
               variantId={currentVariant?.id}
               availableForSale={currentVariant?.availableForSale}
             />
-            <p className="text-center text-xs text-zinc-500 uppercase tracking-wide">
+
+            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wide text-zinc-400 mt-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Free Shipping on orders over $150
-            </p>
+            </div>
           </div>
 
-          <div className="mt-10 border-t border-zinc-200 pt-10">
-            <h3 className="text-sm font-bold uppercase text-zinc-900 mb-4">
-              Description
+          <div className="mt-12 pt-10 border-t border-zinc-200">
+            <h3 className="text-sm font-black uppercase tracking-widest text-emerald-950 mb-6 flex items-center gap-2">
+              <span className="h-1 w-8 bg-amber-400" />
+              Product Details
             </h3>
             <div
-              className="prose prose-sm text-zinc-600 prose-headings:font-bold prose-headings:uppercase"
+              className="prose prose-sm prose-zinc prose-p:font-medium prose-headings:font-bold prose-headings:uppercase prose-a:text-emerald-700"
               dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
             />
           </div>

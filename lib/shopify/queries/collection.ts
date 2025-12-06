@@ -6,7 +6,7 @@ import {
 
 export const getCollectionsQuery = /* GraphQL */ `
   query getCollections {
-    collections(first: 3, sortKey: UPDATED_AT, reverse: true) {
+    collections(first: 5, sortKey: UPDATED_AT, reverse: true) {
       edges {
         node {
           ...collection

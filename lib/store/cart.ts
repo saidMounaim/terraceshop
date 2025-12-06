@@ -7,6 +7,7 @@ interface CartState {
   closeCart: () => void;
   setQuantity: (qty: number) => void;
   addItemOptimistic: (amount: number) => void;
+  updateOptimisticQuantity: (amount: number) => void;
 }
 
 export const useCartStore = create<CartState>((set) => ({
@@ -19,5 +20,8 @@ export const useCartStore = create<CartState>((set) => ({
   setQuantity: (qty) => set({ cartQuantity: qty }),
 
   addItemOptimistic: (amount) =>
+    set((state) => ({ cartQuantity: state.cartQuantity + amount })),
+
+  updateOptimisticQuantity: (amount) =>
     set((state) => ({ cartQuantity: state.cartQuantity + amount })),
 }));

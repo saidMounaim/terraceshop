@@ -8,7 +8,8 @@ export function ProductGallery({ images }: { images: any[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative aspect-4/5 w-full overflow-hidden rounded-none bg-zinc-100">
+      {/* Main Image - Sharp corners */}
+      <div className="relative aspect-4/5 w-full overflow-hidden bg-zinc-100 border-2 border-transparent hover:border-emerald-950/10 transition-colors">
         <Image
           src={images[0].url}
           alt={images[0].altText || "Product Image"}
@@ -20,22 +21,20 @@ export function ProductGallery({ images }: { images: any[] }) {
 
       {images.length > 1 && (
         <div className="grid grid-cols-2 gap-4">
-          {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            images.slice(1).map((image: any, i: number) => (
-              <div
-                key={i}
-                className="relative aspect-square overflow-hidden bg-zinc-100"
-              >
-                <Image
-                  src={image.url}
-                  alt={image.altText || "Product Detail"}
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            ))
-          }
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {images.slice(1).map((image: any, i: number) => (
+            <div
+              key={i}
+              className="relative aspect-square overflow-hidden bg-zinc-100"
+            >
+              <Image
+                src={image.url}
+                alt={image.altText || "Product Detail"}
+                fill
+                className="object-cover hover:scale-110 transition-transform duration-700 ease-out"
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>

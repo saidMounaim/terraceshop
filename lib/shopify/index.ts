@@ -203,6 +203,7 @@ export async function getAllProducts({
       first: 100,
     },
     cacheTag: ["products"],
+    cache: "no-store",
   });
   return res.body.data.products?.edges || [];
 }
@@ -213,7 +214,17 @@ export async function getCollections() {
   const res = await shopifyFetch<any>({
     query: getCollectionsQuery,
     cacheTag: ["collections"],
+    cache: "no-store",
   });
 
-  return res.body.data.collections?.edges || [];
+  const collections = res.body.data.collections?.edges || [];
+
+  const validCollections = collections
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .filter((edge: any) => edge.node.image)
+    .slice(0, 3);
+
+  return validCollections;
+
+  return validCollections;
 }

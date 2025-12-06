@@ -1,21 +1,18 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
+import { getCart } from "@/lib/shopify";
 import { UserMenu } from "./user-menu";
 import { MobileMenu } from "./mobile-menu";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { CartSheet } from "../../cart/cart-sheet";
-import { cookies } from "next/headers";
-import { getCart } from "@/lib/shopify";
 import { CartTrigger } from "./cart-trigger";
+import { CartSheet } from "../../cart/cart-sheet";
 
 export async function Navbar() {
   const session = await auth();
-
   const c = await cookies();
   const cartId = c.get("cartId")?.value;
-  let cart;
 
+  let cart;
   if (cartId) {
     cart = await getCart(cartId);
   }
@@ -25,16 +22,19 @@ export async function Navbar() {
   return (
     <>
       <CartSheet cart={cart} isLoggedIn={isLoggedIn} />
-      <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md">
+
+      <header className="sticky top-0 z-50 w-full border-b-2 border-emerald-950/10 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center px-6">
           <MobileMenu />
 
           <div className="mr-8 hidden lg:flex">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-black rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xs">TS</span>
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="h-8 w-8 bg-emerald-950 rounded-none flex items-center justify-center transition-transform group-hover:rotate-3">
+                <span className="text-amber-400 font-black text-xs tracking-tighter">
+                  TS
+                </span>
               </div>
-              <span className="text-xl font-extrabold uppercase tracking-tighter">
+              <span className="text-xl font-black uppercase tracking-tighter italic text-emerald-950">
                 Terrace Shop
               </span>
             </Link>
@@ -43,7 +43,7 @@ export async function Navbar() {
           <div className="flex-1 lg:hidden flex justify-center">
             <Link
               href="/"
-              className="text-lg font-extrabold uppercase tracking-tighter"
+              className="text-lg font-black uppercase tracking-tighter italic text-emerald-950"
             >
               Terrace Shop
             </Link>
@@ -52,37 +52,32 @@ export async function Navbar() {
           <nav className="hidden flex-1 items-center justify-center gap-8 lg:flex">
             <Link
               href="/search"
-              className="text-sm font-bold uppercase tracking-wide hover:text-zinc-600"
+              className="text-sm font-bold uppercase tracking-wide text-zinc-600 hover:text-emerald-950 hover:underline decoration-2 underline-offset-4 transition-all"
             >
               New Arrivals
             </Link>
             <Link
               href="/search/jackets"
-              className="text-sm font-bold uppercase tracking-wide hover:text-zinc-600"
+              className="text-sm font-bold uppercase tracking-wide text-zinc-600 hover:text-emerald-950 hover:underline decoration-2 underline-offset-4 transition-all"
             >
               Outerwear
             </Link>
             <Link
-              href="/search/shoes"
-              className="text-sm font-bold uppercase tracking-wide hover:text-zinc-600"
+              href="/search/hoodies"
+              className="text-sm font-bold uppercase tracking-wide text-zinc-600 hover:text-emerald-950 hover:underline decoration-2 underline-offset-4 transition-all"
             >
-              Trainers
+              Hoodies
             </Link>
             <Link
-              href="/search/accessories"
-              className="text-sm font-bold uppercase tracking-wide hover:text-zinc-600"
+              href="/search/t-shirts"
+              className="text-sm font-bold uppercase tracking-wide text-zinc-600 hover:text-emerald-950 hover:underline decoration-2 underline-offset-4 transition-all"
             >
-              Accessories
+              Summer
             </Link>
           </nav>
 
-          <div className="flex items-center justify-end gap-2 lg:flex-none">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Search className="h-5 w-5" />
-            </Button>
-
+          <div className="flex items-center justify-end gap-1 lg:flex-none">
             <UserMenu user={session?.user} />
-
             <CartTrigger quantity={cart?.totalQuantity || 0} />
           </div>
         </div>
