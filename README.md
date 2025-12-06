@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Terrace Shop - Headless Shopify Store
 
-## Getting Started
+A high-performance, headless e-commerce storefront built for the modern football terrace culture.
 
-First, run the development server:
+Built with **Next.js 16 (App Router)**, **Shopify Storefront API**, and **Server Actions**.
+
+![Terrace Shop Hero](https://i.ibb.co/bRRjzv8Z/terraceshop-bg.png)
+
+## ⚡ Key Features
+
+- **🛒 Instant Optimistic UI (Zustand):**
+  - Cart additions and quantity updates are reflected instantly (0ms latency) on the client using **Zustand** stores.
+  - Background synchronization with Server Actions ensures data integrity without blocking the user interface.
+  - Automatic manual rollback handles rare API failures (e.g., out-of-stock errors) gracefully.
+- **🔒 Gated Checkout & Identity Sync:**
+  - **Smart Redirect:** Guests are routed to Login; Users are routed to Checkout.
+  - **Identity Injection:** Utilizes `cartBuyerIdentityUpdate` immediately before checkout to ensure the user's email and saved addresses are pre-filled on Shopify's checkout page.
+  - **"Self-Healing" Cart:** Automatically detects expired or completed cart IDs in cookies and generates a fresh cart instance transparently.
+- **📦 Hybrid Order Tracking:**
+  - Fetches real-time fulfillment status via the Storefront API.
+  - Displays Carrier & Tracking Number directly on the user's Order History dashboard.
+  - Provides a "Track Package" deep link to the official Shopify Status map for live updates.
+- **🔍 High-Performance Discovery:**
+  - **URL-Based Filtering:** Search and Collections rely on URL parameters (e.g., `?sort=price-asc`) for shareability and server-side rendering (SSR) compatibility.
+- **🛡️ Secure Authentication:**
+  - Powered by **NextAuth.js (v5)**.
+  - Strictly gates the Account and Order History pages.
+  - Seamlessly integrates user session data with Shopify customer records.
+
+## 🛠️ Tech Stack
+
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Server Actions, React 19 RC)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Components:** [Shadcn UI](https://ui.shadcn.com/) + [Lucide Icons](https://lucide.dev/)
+- **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (Client-side Cart State)
+- **Backend:** [Shopify Storefront API](https://shopify.dev/docs/api/storefront) (GraphQL)
+- **Auth:** [NextAuth.js](https://authjs.dev/)
+
+## 🚀 Getting Started
+
+### 1. Clone & Install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone [https://github.com/your-username/terrace-shop.git](https://github.com/your-username/terrace-shop.git)
+cd terrace-shop
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a .env file in the root directory and populate it with your keys:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Your store URL (remove 'https://' and trailing slashes)
+SHOPIFY_STORE_DOMAIN=""
+# PUBLIC: Used by Client & Server (Starts with public_... or generic string)
+SHOPIFY_STOREFRONT_ACCESS_TOKEN=""
+# PRIVATE: Server-Side ONLY (Starts with shpat_...)
+SHOPIFY_ADMIN_ACCESS_TOKEN=""
+# The API version you are targeting (e.g., 2024-04)
+SHOPIFY_API_VERSION="2024-04"
+# AUTHENTICATION (NextAuth)
+AUTH_SECRET=""
+# The base URL of your site
+AUTH_URL=""
+# GOOGLE OAUTH
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+```
 
-## Learn More
+### 4. Run the App
 
-To learn more about Next.js, take a look at the following resources:
+Start the development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Visit http://localhost:3000 to see the app live.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 🤝 Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome! Please follow these steps:
+
+Fork the repository.
+
+Create a new branch: `git checkout -b feature/new-feature`
+
+Commit your changes: `git commit -m 'Add some feature'`
+
+Push to the branch: `git push origin feature/new-feature`
+
+Submit a pull request.
