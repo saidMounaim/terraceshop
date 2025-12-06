@@ -4,7 +4,10 @@ import {
   getProductRecommendationsQuery,
   getProductsQuery,
 } from "./queries/product";
-import { getCollectionProductsQuery } from "./queries/collection";
+import {
+  getCollectionProductsQuery,
+  getCollectionsQuery,
+} from "./queries/collection";
 import { getCartQuery } from "./queries/cart";
 import { getCustomerOrdersQuery } from "./queries/customer";
 
@@ -90,15 +93,16 @@ export async function getCollectionProducts({
 }: {
   collection: string;
   reverse?: boolean;
-  sortKey?: "CREATED" | "PRICE" | "BEST_SELLING" | "TITLE";
+  sortKey?: string;
 }) {
+  const querySortKey = sortKey === "CREATED_AT" ? "CREATED" : sortKey;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res = await shopifyFetch<any>({
     query: getCollectionProductsQuery,
     variables: {
       handle: collection,
       reverse,
-      sortKey: sortKey === "CREATED" ? "CREATED" : sortKey,
+      sortKey: querySortKey,
     },
     cache: "no-store",
     cacheTag: [`collection-${collection}`],
@@ -180,4 +184,36 @@ export async function getCustomerOrders(accessToken: string) {
   });
 
   return res.body.data.customer?.orders?.edges || [];
+}
+
+// Fetch All Products
+export async function getAllProducts({
+  sortKey,
+  reverse,
+}: {
+  sortKey?: string;
+  reverse?: boolean;
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getProductsQuery,
+    variables: {
+      sortKey,
+      reverse,
+      first: 100,
+    },
+    cacheTag: ["products"],
+  });
+  return res.body.data.products?.edges || [];
+}
+
+// Fetch All Collections
+export async function getCollections() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await shopifyFetch<any>({
+    query: getCollectionsQuery,
+    cacheTag: ["collections"],
+  });
+
+  return res.body.data.collections?.edges || [];
 }

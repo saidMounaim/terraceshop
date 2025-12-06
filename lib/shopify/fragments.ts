@@ -139,3 +139,16 @@ export const cartFragment = /* GraphQL */ `
   ${imageFragment}
   ${priceFragment}
 `;
+
+export const collectionFragment = /* GraphQL */ `
+  fragment collection on Collection {
+    handle
+    title
+    description
+    seo {
+      description
+      title
+    }
+    updatedAt
+  }
+`;

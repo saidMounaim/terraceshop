@@ -1,16 +1,24 @@
-import { productFragment } from "../fragments";
+import {
+  collectionFragment,
+  imageFragment,
+  productFragment,
+} from "../fragments";
 
-const collectionFragment = /* GraphQL */ `
-  fragment collection on Collection {
-    handle
-    title
-    description
-    seo {
-      description
-      title
+export const getCollectionsQuery = /* GraphQL */ `
+  query getCollections {
+    collections(first: 3, sortKey: UPDATED_AT, reverse: true) {
+      edges {
+        node {
+          ...collection
+          image {
+            ...image
+          }
+        }
+      }
     }
-    updatedAt
   }
+  ${collectionFragment}
+  ${imageFragment}
 `;
 
 export const getCollectionQuery = /* GraphQL */ `
