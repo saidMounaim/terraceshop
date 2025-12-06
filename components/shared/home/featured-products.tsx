@@ -5,8 +5,16 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getFeaturedProducts } from "@/lib/shopify";
 
+export const dynamic = "force-dynamic";
+
 export async function FeaturedProducts() {
-  const products = await getFeaturedProducts();
+  let products = [];
+  try {
+    products = await getFeaturedProducts();
+  } catch (error) {
+    console.log(error);
+    products = [];
+  }
   return (
     <section className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">

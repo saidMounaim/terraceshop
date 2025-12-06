@@ -6,7 +6,9 @@ type AdminFetchParams = {
   variables?: Record<string, unknown>;
 };
 
-// The Admin API Engine
+type RestMethod = "GET" | "POST" | "PUT" | "DELETE";
+
+// Generic GraphQL Fetch Helper
 export async function shopifyAdminFetch<T>({
   query,
   variables,
@@ -26,45 +28,56 @@ export async function shopifyAdminFetch<T>({
   const body = await response.json();
 
   if (body.errors) {
-    throw new Error(`Admin API Error: ${JSON.stringify(body.errors)}`);
+    throw new Error(`Admin GraphQL Error: ${JSON.stringify(body.errors)}`);
   }
 
   return body.data as T;
 }
 
-// Create a customer in Shopify (if they log in with Google for the first time)
+// Generic REST Fetch Helper
+async function shopifyAdminRestFetch<T>(
+  path: string,
+  method: RestMethod = "GET",
+  body?: unknown
+): Promise<T> {
+  const endpoint = `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/${path}`;
+
+  const response = await fetch(endpoint, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+
+  // We return the raw JSON because REST errors need specific handling (like 'email taken')
+  return response.json();
+}
+
+// Create Customer via REST API
 export async function createCustomerREST(user: {
   email: string;
   firstName?: string;
   lastName?: string;
   tags?: string[];
 }) {
-  const endpoint = `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers.json`;
-
   const tempPassword = Math.random().toString(36).slice(-10) + "1A!";
 
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = await shopifyAdminRestFetch<any>("customers.json", "POST", {
+    customer: {
+      first_name: user.firstName,
+      last_name: user.lastName,
+      email: user.email,
+      verified_email: true,
+      send_email_welcome: false,
+      password: tempPassword,
+      password_confirmation: tempPassword,
+      tags: user.tags?.join(",") || "auth_google",
     },
-    body: JSON.stringify({
-      customer: {
-        first_name: user.firstName,
-        last_name: user.lastName,
-        email: user.email,
-        verified_email: true,
-        send_email_welcome: false,
-        password: tempPassword,
-        password_confirmation: tempPassword,
-        tags: user.tags?.join(",") || "auth_google",
-      },
-    }),
-    cache: "no-store",
   });
-
-  const data = await response.json();
 
   if (data.errors) {
     const errorString = JSON.stringify(data.errors);
@@ -77,52 +90,43 @@ export async function createCustomerREST(user: {
   return { status: "created", customer: data.customer };
 }
 
-// Save Cart ID to Customer Metafield
+// Save and Retrieve Cart ID in Customer Metafields
 export async function saveCartToCustomer(email: string, cartId: string) {
   const customer = await findCustomerByEmail(email);
   if (!customer) return;
 
-  const response = await fetch(
-    `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers/${customer.id}.json`,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return await shopifyAdminRestFetch<any>(
+    `customers/${customer.id}.json`,
+    "PUT",
     {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN,
+      customer: {
+        id: customer.id,
+        metafields: [
+          {
+            namespace: "custom",
+            key: "active_cart_id",
+            value: cartId,
+            type: "single_line_text_field",
+          },
+        ],
       },
-      body: JSON.stringify({
-        customer: {
-          id: customer.id,
-          metafields: [
-            {
-              namespace: "custom",
-              key: "active_cart_id",
-              value: cartId,
-              type: "single_line_text_field",
-            },
-          ],
-        },
-      }),
     }
   );
-
-  return response.json();
 }
 
-// Get Cart ID from Customer Metafield
+// Retrieve Cart ID from Customer Metafields
 export async function getCartFromCustomer(email: string) {
   const customer = await findCustomerByEmail(email);
   if (!customer) return null;
 
-  const response = await fetch(
-    `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers/${customer.id}/metafields.json`,
-    {
-      headers: { "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN },
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const body = await shopifyAdminRestFetch<any>(
+    `customers/${customer.id}/metafields.json`,
+    "GET"
   );
 
-  const body = await response.json();
-  const metafield = body.metafields.find(
+  const metafield = body.metafields?.find(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (m: any) => m.key === "active_cart_id" && m.namespace === "custom"
   );
@@ -132,12 +136,10 @@ export async function getCartFromCustomer(email: string) {
 
 // Helper: Find Customer ID by Email
 async function findCustomerByEmail(email: string) {
-  const res = await fetch(
-    `https://${env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-04/customers/search.json?query=email:${email}`,
-    {
-      headers: { "X-Shopify-Access-Token": env.SHOPIFY_ADMIN_ACCESS_TOKEN },
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = await shopifyAdminRestFetch<any>(
+    `customers/search.json?query=email:${email}`,
+    "GET"
   );
-  const data = await res.json();
-  return data.customers[0] || null;
+  return data.customers?.[0] || null;
 }

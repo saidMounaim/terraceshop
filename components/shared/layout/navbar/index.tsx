@@ -20,9 +20,11 @@ export async function Navbar() {
     cart = await getCart(cartId);
   }
 
+  const isLoggedIn = !!session?.user;
+
   return (
     <>
-      <CartSheet cart={cart} />
+      <CartSheet cart={cart} isLoggedIn={isLoggedIn} />
       <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center px-6">
           <MobileMenu />

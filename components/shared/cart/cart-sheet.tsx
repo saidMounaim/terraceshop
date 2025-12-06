@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag } from "lucide-react";
+import { Loader2, Lock, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,13 +12,30 @@ import {
 } from "@/components/ui/sheet";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "./cart-context";
-import { EditItemQuantity } from "./edit-item-quantity"; // 👈 New Import
-import { DeleteItem } from "./delete-item"; // 👈 New Import
+import { EditItemQuantity } from "./edit-item-quantity";
+import { DeleteItem } from "./delete-item";
+import { useTransition } from "react";
+import { proceedToCheckout } from "@/lib/actions/chekout";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function CartSheet({ cart }: { cart: any }) {
+export function CartSheet({
+  cart,
+  isLoggedIn,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cart: any;
+  isLoggedIn: boolean;
+}) {
   const { isOpen, closeCart } = useCart();
   const items = cart?.lines?.edges || [];
+
+  const [isPending, startTransition] = useTransition();
+
+  const handleCheckout = () => {
+    closeCart();
+    startTransition(async () => {
+      await proceedToCheckout();
+    });
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
@@ -57,7 +74,6 @@ export function CartSheet({ cart }: { cart: any }) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.map(({ node }: any) => (
                   <div key={node.id} className="flex gap-4">
-                    {/* Image */}
                     <div className="relative h-24 w-20 flex-none overflow-hidden rounded-md bg-zinc-100 border border-zinc-200">
                       {node.merchandise.product.featuredImage && (
                         <Image
@@ -83,7 +99,6 @@ export function CartSheet({ cart }: { cart: any }) {
                             {node.merchandise.title}
                           </p>
                         </div>
-                        {/* Delete Button (Top Right of Item) */}
                         <DeleteItem item={node} />
                       </div>
 
@@ -92,7 +107,6 @@ export function CartSheet({ cart }: { cart: any }) {
                           {formatPrice(node.cost.totalAmount.amount)}
                         </p>
 
-                        {/* Quantity Controls */}
                         <div className="flex items-center gap-3">
                           <EditItemQuantity item={node} type="minus" />
                           <span className="w-4 text-center text-sm font-medium">
@@ -121,10 +135,21 @@ export function CartSheet({ cart }: { cart: any }) {
               Shipping & taxes calculated at checkout.
             </p>
             <Button
-              asChild
-              className="w-full h-12 text-base font-bold uppercase tracking-wide bg-black hover:bg-zinc-800"
+              onClick={handleCheckout}
+              disabled={isPending}
+              className="w-full h-12 bg-black text-white font-bold uppercase"
             >
-              <a href={cart?.checkoutUrl}>Checkout</a>
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Redirecting...
+                </>
+              ) : (
+                <>
+                  <Lock className="mr-2 h-4 w-4" />
+                  {isLoggedIn ? "Checkout" : "Log in to Checkout"}
+                </>
+              )}
             </Button>
           </div>
         )}
