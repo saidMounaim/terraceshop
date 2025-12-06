@@ -1,22 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getFeaturedProducts } from "@/lib/shopify";
-import { Plus } from "lucide-react";
 import { ProductCard } from "../product/product-card";
 
-export const dynamic = "force-dynamic";
-
 export async function FeaturedProducts() {
-  let products = [];
-  try {
-    products = await getFeaturedProducts();
-  } catch (error) {
-    console.log(error);
-    products = [];
-  }
+  const products = await getFeaturedProducts();
 
   if (!products.length) return null;
 
