@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { ArrowRight, AlertTriangle } from "lucide-react";
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
 
@@ -55,18 +56,24 @@ export default function RegisterForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First name</FormLabel>
+                <FormLabel className="uppercase text-xs font-black tracking-widest text-emerald-950">
+                  First name
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="John" className="h-11" {...field} />
+                  <Input
+                    placeholder="John"
+                    className="h-12 rounded-none border-2 border-zinc-200 bg-zinc-50 px-4 font-bold focus:border-emerald-950 focus:ring-0 transition-colors"
+                    {...field}
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs font-bold uppercase text-red-600" />
               </FormItem>
             )}
           />
@@ -75,11 +82,17 @@ export default function RegisterForm() {
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last name</FormLabel>
+                <FormLabel className="uppercase text-xs font-black tracking-widest text-emerald-950">
+                  Last name
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="Doe" className="h-11" {...field} />
+                  <Input
+                    placeholder="Doe"
+                    className="h-12 rounded-none border-2 border-zinc-200 bg-zinc-50 px-4 font-bold focus:border-emerald-950 focus:ring-0 transition-colors"
+                    {...field}
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs font-bold uppercase text-red-600" />
               </FormItem>
             )}
           />
@@ -90,7 +103,9 @@ export default function RegisterForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="uppercase text-xs font-black tracking-widest text-emerald-950">
+                Email
+              </FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -98,11 +113,11 @@ export default function RegisterForm() {
                   autoCapitalize="none"
                   autoComplete="email"
                   autoCorrect="off"
-                  className="h-11"
+                  className="h-12 rounded-none border-2 border-zinc-200 bg-zinc-50 px-4 font-bold focus:border-emerald-950 focus:ring-0 transition-colors"
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs font-bold uppercase text-red-600" />
             </FormItem>
           )}
         />
@@ -112,37 +127,42 @@ export default function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className="uppercase text-xs font-black tracking-widest text-emerald-950">
+                Password
+              </FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   placeholder="Min 6 characters"
-                  className="h-11"
+                  className="h-12 rounded-none border-2 border-zinc-200 bg-zinc-50 px-4 font-bold focus:border-emerald-950 focus:ring-0 transition-colors"
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs font-bold uppercase text-red-600" />
             </FormItem>
           )}
         />
 
         {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600 border border-red-100">
-            ⚠️ {error}
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 p-3 text-sm font-bold text-red-900 rounded-none">
+            <AlertTriangle className="h-4 w-4" />
+            {error}
           </div>
         )}
 
         <Button
           type="submit"
           disabled={isPending}
-          className="mt-2 h-11 w-full font-bold"
+          className="mt-4 h-14 w-full rounded-none bg-emerald-950 text-white font-black uppercase tracking-widest hover:bg-emerald-900 border-2 border-transparent hover:border-amber-400 transition-all"
         >
-          {isPending ? "Creating account..." : "Create account"}
+          {isPending ? (
+            "Creating account..."
+          ) : (
+            <span className="flex items-center gap-2">
+              Create Account <ArrowRight className="h-4 w-4" />
+            </span>
+          )}
         </Button>
-
-        <p className="px-8 text-center text-xs text-gray-500 mt-4">
-          By registering, you agree to our Terms of Service and Privacy Policy.
-        </p>
       </form>
     </Form>
   );

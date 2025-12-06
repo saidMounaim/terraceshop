@@ -2,6 +2,8 @@ import { Categories } from "@/components/shared/home/categories";
 import { FeaturedProducts } from "@/components/shared/home/featured-products";
 import { Hero } from "@/components/shared/home/hero";
 
+export const dynamic = "force-dynamic";
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-background font-sans antialiased">

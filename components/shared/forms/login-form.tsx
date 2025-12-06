@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AlertTriangle, Lock } from "lucide-react";
 
 type LoginFormValues = z.infer<typeof signInSchema>;
 
@@ -54,13 +55,15 @@ export default function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="uppercase text-xs font-black tracking-widest text-emerald-950">
+                Email
+              </FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -68,11 +71,11 @@ export default function LoginForm() {
                   autoCapitalize="none"
                   autoComplete="email"
                   autoCorrect="off"
-                  className="h-11"
+                  className="h-12 rounded-none border-2 border-zinc-200 bg-zinc-50 px-4 font-bold focus:border-emerald-950 focus:ring-0 transition-colors"
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs font-bold uppercase text-red-600" />
             </FormItem>
           )}
         />
@@ -82,23 +85,26 @@ export default function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className="uppercase text-xs font-black tracking-widest text-emerald-950">
+                Password
+              </FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="h-11"
+                  className="h-12 rounded-none border-2 border-zinc-200 bg-zinc-50 px-4 font-bold focus:border-emerald-950 focus:ring-0 transition-colors"
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs font-bold uppercase text-red-600" />
             </FormItem>
           )}
         />
 
         {error && (
-          <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
+          <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 p-3 text-sm font-bold text-amber-900 rounded-none">
+            <AlertTriangle className="h-4 w-4" />
             {error}
           </div>
         )}
@@ -106,9 +112,15 @@ export default function LoginForm() {
         <Button
           type="submit"
           disabled={loading}
-          className="mt-2 h-11 w-full font-bold"
+          className="mt-2 h-14 w-full rounded-none bg-emerald-950 text-white font-black uppercase tracking-widest hover:bg-emerald-900 border-2 border-transparent hover:border-amber-400 transition-all"
         >
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? (
+            "Signing in..."
+          ) : (
+            <span className="flex items-center gap-2">
+              <Lock className="h-4 w-4" /> Sign In
+            </span>
+          )}
         </Button>
       </form>
     </Form>
